@@ -1,5 +1,6 @@
 using Intento.Core.Models;
-using System.Diagnostics;
+using DiagnosticsProcess = System.Diagnostics.Process;
+using DiagnosticsProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
 namespace Intento.Infrastructure;
 
@@ -14,11 +15,12 @@ public sealed class WorkspaceLauncher
                 switch (item.Type)
                 {
                     case WorkspaceItemType.Url:
-                        Process.Start(new ProcessStartInfo(item.Target) { UseShellExecute = true });
-                        break;
                     case WorkspaceItemType.Application:
                     case WorkspaceItemType.Folder:
-                        Process.Start(new ProcessStartInfo(item.Target) { UseShellExecute = true });
+                        DiagnosticsProcess.Start(new DiagnosticsProcessStartInfo(item.Target)
+                        {
+                            UseShellExecute = true
+                        });
                         break;
                 }
             }
