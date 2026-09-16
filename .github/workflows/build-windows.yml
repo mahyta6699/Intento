@@ -31,15 +31,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Verify toolchain
+      - name: Verify .NET toolchain
         shell: pwsh
         run: |
           dotnet --info
           dotnet --version
-          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
-            throw 'MSBuild is required for the WinUI 3 build but was not found on the runner.'
-          }
-          msbuild -version
 
       - name: Restore
         run: dotnet restore Intento.sln --locked-mode
