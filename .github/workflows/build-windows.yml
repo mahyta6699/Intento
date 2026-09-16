@@ -8,50 +8,88 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: windows-mvp-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  WINDOWS_SDK_VERSION: '10.0.26100.4948'
+  WINDOWS_APP_SDK_VERSION: '1.8.260317003'
+
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build Intento x64
+    runs-on: windows-2025
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Verify toolchain
+        shell: pwsh
+        run: |
+          dotnet --info
+          dotnet --version
+          if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
+            throw 'MSBuild is required for the WinUI 3 build but was not found on the runner.'
+          }
+          msbuild -version
 
       - name: Restore
-        run: dotnet restore Intento.sln
+        run: dotnet restore Intento.sln --locked-mode
 
-      - name: Build
-        run: dotnet build Intento.sln -c Release --no-restore
+      - name: Build Release x64
+        run: >-
+          dotnet build Intento.sln
+          -c Release
+          -p:Platform=x64
+          --no-restore
+          -warnaserror
 
       - name: Publish x64
         run: >-
           dotnet publish src/Intento.App/Intento.App.csproj
           -c Release
+          -p:Platform=x64
           -r win-x64
           --self-contained true
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
           -o artifacts/Intento-win-x64
 
-      - name: Rename executable
+      - name: Validate executable
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Path artifacts/Intento-win-x64 -Filter *.exe | Select-Object -First 1
-          if (-not $exe) { throw 'No executable was produced by dotnet publish.' }
-          Rename-Item -Path $exe.FullName -NewName 'Intento.exe'
+          $exe = Get-ChildItem -Path artifacts/Intento-win-x64 -Filter *.exe -File | Select-Object -First 1
+          if (-not $exe) {
+            throw 'No executable was produced by dotnet publish.'
+          }
+          if ($exe.Length -lt 1MB) {
+            throw "Executable is unexpectedly small: $($exe.Length) bytes."
+          }
+          if ($exe.Name -ne 'Intento.exe') {
+            Rename-Item -Path $exe.FullName -NewName 'Intento.exe'
+          }
+          Get-Item artifacts/Intento-win-x64/Intento.exe | Format-List FullName,Length,LastWriteTime
 
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: Intento-win-x64
-          path: artifacts/Intento-win-x64/
+          path: artifacts/Intento-win-x64/Intento.exe
           if-no-files-found: error
+          retention-days: 14
 
       - name: Create GitHub Release
+        if: success() && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
@@ -60,4 +98,5 @@ jobs:
           gh release create $tag `
             artifacts/Intento-win-x64/Intento.exe `
             --title "Intento MVP $tag" `
+            --target $env:GITHUB_SHA `
             --generate-notes
