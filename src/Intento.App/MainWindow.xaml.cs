@@ -9,12 +9,22 @@ public sealed partial class MainWindow : Window
 {
     private readonly ActivityStore _store = new();
     private readonly WorkspaceLauncher _launcher = new();
+    private bool _activitiesLoaded;
 
     public MainWindow()
     {
         InitializeComponent();
         Title = "Intento";
-        Loaded += async (_, _) => await LoadActivitiesAsync();
+        Activated += MainWindow_Activated;
+    }
+
+    private async void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
+    {
+        if (_activitiesLoaded || e.WindowActivationState == WindowActivationState.Deactivated)
+            return;
+
+        _activitiesLoaded = true;
+        await LoadActivitiesAsync();
     }
 
     private async Task LoadActivitiesAsync()
