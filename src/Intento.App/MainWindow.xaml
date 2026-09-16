@@ -1,0 +1,42 @@
+<Window
+    x:Class="Intento.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Padding="48">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="Intento" FontSize="32" FontWeight="SemiBold" />
+            <TextBlock Text="What do you intend to do today?" FontSize="24" />
+            <TextBlock Text="Choose a workspace to open your apps, websites, and folders." Opacity="0.7" />
+        </StackPanel>
+
+        <ItemsRepeater x:Name="ActivitiesRepeater" Grid.Row="1" Margin="0,32,0,32">
+            <ItemsRepeater.Layout>
+                <UniformGridLayout MinItemWidth="220" MinItemHeight="120" MinColumnSpacing="16" MinRowSpacing="16" />
+            </ItemsRepeater.Layout>
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate>
+                    <Button Click="ActivityButton_Click" Tag="{Binding}">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding Icon}" FontSize="32" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" FontSize="18" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+            <Button Content="Reload" Click="Reload_Click" />
+            <Button Content="Exit" Click="Exit_Click" />
+        </StackPanel>
+    </Grid>
+</Window>
