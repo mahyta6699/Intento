@@ -2,141 +2,109 @@
 
 > **What do you intend to do today?**
 
-Intento is a Windows productivity application designed to help users quickly set up their workspace based on what they plan to do.
+Intento is a Windows productivity application that prepares your workspace around your intention. Choose an activity and Intento opens its configured applications, websites, and folders together.
 
-Instead of manually searching for and opening the same websites, applications, and folders every time you start your computer, Intento lets you organize them into activity-based groups and launch everything you need with a single choice.
+## MVP
 
-## ✨ Concept
+The first runnable MVP is now scaffolded as a **.NET 10 + WinUI 3** desktop application.
 
-When your Windows device starts, Intento asks:
+### Current MVP flow
 
-> **What do you intend to do today?**
+1. Start Intento.
+2. See the question **"What do you intend to do today?"**.
+3. Choose **Job**, **Learning**, **Research**, or **Workout**.
+4. Intento launches every configured item for that activity.
+5. Activities are stored as JSON under the user's local application data.
 
-You can then select an activity such as:
+The default activities are intentionally empty so the MVP can be used without assuming which applications, URLs, or folders exist on a user's PC.
 
-* 💼 **Job**
-* 📚 **Learning**
-* 🔬 **Research**
-* 🏋️ **Workout**
-
-Once an activity is selected, Intento opens all the applications, websites, and folders associated with that activity automatically.
-
-### Example
-
-Suppose your **Job** workspace contains:
-
-* Microsoft Excel
-* Your company's website
-* Project management website
-* Work-related folders
-
-Instead of opening each one manually, you select **Job** and Intento launches them together.
-
-The same idea can be applied to other activities:
-
-| Activity    | Example items                                   |
-| ----------- | ----------------------------------------------- |
-| 💼 Job      | Excel, work websites, project folders           |
-| 📚 Learning | YouTube, learning applications, documentation   |
-| 🔬 Research | PowerPoint, Google, ChatGPT, research tools     |
-| 🏋️ Workout | Workout folder, music folder, fitness resources |
-
-## 🎯 Why Intento?
-
-Starting a computer often means repeating the same setup routine:
-
-1. Find the applications you need.
-2. Open several websites.
-3. Navigate to specific folders.
-4. Arrange everything for the task you're about to do.
-
-Intento aims to reduce this repetitive setup and help users get directly into their intended activity.
-
-The goal is simple:
-
-**Choose what you want to do → Intento prepares your workspace.**
-
-## 🚀 Planned Workflow
-
-The intended user experience is:
+## Architecture
 
 ```text
-Start Windows
-     │
-     ▼
-┌───────────────────────────────┐
-│   What do you intend to do?   │
-│                               │
-│   ☐ Job                       │
-│   ☐ Learning                  │
-│   ☐ Research                  │
-│   ☐ Workout                   │
-└───────────────────────────────┘
-     │
-     ▼
-Select an activity
-     │
-     ▼
-Intento opens the associated
-apps, websites, and folders
-     │
-     ▼
-Ready to work
+Intento.App (WinUI 3)
+        │
+        ▼
+Intento.Core (domain models)
+        │
+        ▼
+Intento.Infrastructure
+   ├── ActivityStore (JSON)
+   └── WorkspaceLauncher (Windows shell)
 ```
 
-## 🛠️ Project Status
+## Project Structure
 
-Intento is currently in the **planning / early development stage**.
+```text
+Intento/
+├── Intento.sln
+├── src/
+│   ├── Intento.App/
+│   │   ├── App.xaml
+│   │   ├── App.xaml.cs
+│   │   ├── MainWindow.xaml
+│   │   ├── MainWindow.xaml.cs
+│   │   └── Intento.App.csproj
+│   ├── Intento.Core/
+│   │   ├── Models/Activity.cs
+│   │   └── Intento.Core.csproj
+│   └── Intento.Infrastructure/
+│       ├── ActivityStore.cs
+│       ├── WorkspaceLauncher.cs
+│       └── Intento.Infrastructure.csproj
+├── STACK.md
+└── TASKS.md
+```
 
-The repository currently contains project documentation describing the core concept and planned functionality. Implementation details and the final technology stack may evolve as development progresses.
+## Example Activity Configuration
 
-## 🗺️ Roadmap
+The persisted JSON model supports application paths, URLs, and folders:
 
-Potential future features include:
+```json
+[
+  {
+    "Name": "Job",
+    "Icon": "💼",
+    "Items": [
+      { "Name": "Excel", "Type": 0, "Target": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE" },
+      { "Name": "Company", "Type": 1, "Target": "https://example.com" },
+      { "Name": "Project", "Type": 2, "Target": "C:\\Projects\\MyProject" }
+    ]
+  }
+]
+```
 
-* [ ] Create and manage activity groups
-* [ ] Add applications to an activity
-* [ ] Add websites to an activity
-* [ ] Add folders to an activity
-* [ ] Launch all items in an activity simultaneously
-* [ ] Windows startup integration
-* [ ] User-friendly activity selection dialog
-* [ ] Edit and delete existing activities
-* [ ] Save and restore user configuration
-* [ ] Custom activity names and icons
-* [ ] Optional automatic workspace setup
+`Type` values are `0 = Application`, `1 = Url`, and `2 = Folder`.
 
-## 💡 Example Use Cases
+## Development
 
-### Work
+Requirements:
 
-Create a **Job** workspace containing your office applications, project websites, and work folders.
+- Windows 10 version 1809 (build 17763) or later
+- Visual Studio 2022 with Windows App SDK / WinUI 3 development support
+- .NET 10 SDK
 
-### Learning
+Open `Intento.sln`, select the `x64` platform, and run the `Intento.App` project.
 
-Create a **Learning** workspace with educational websites, videos, documentation, and learning applications.
+## Project Status
 
-### Research
+**MVP scaffold implemented.** The core selection, persistence, and workspace-launching path is in place. Activity editing, Windows startup integration, richer error reporting, packaging, and automated tests remain on the roadmap.
 
-Create a **Research** workspace containing your browser, presentation software, notes, search tools, and AI assistants.
+See [`TASKS.md`](TASKS.md) for the implementation plan and [`STACK.md`](STACK.md) for the technology choices.
 
-### Workout
+## Roadmap
 
-Create a **Workout** workspace containing your workout folder, music, and other resources you use during exercise.
+- [x] Create initial activity model
+- [x] Persist activities as JSON
+- [x] Select an activity from the WinUI interface
+- [x] Launch applications, URLs, and folders
+- [ ] Add activity editor
+- [ ] Add item picker / file and folder selection
+- [ ] Add Windows startup integration
+- [ ] Add launch result/error reporting
+- [ ] Add automated tests
+- [ ] Package the application with MSIX
 
-## 📁 Repository
-
-You can find the project on GitHub:
-
-[Intento on GitHub](https://github.com/mahyta6699/Intento?utm_source=chatgpt.com)
-
-## 🤝 Contributing
-
-Intento is currently being developed. Contributions, ideas, feature suggestions, and feedback are welcome as the project evolves.
-
-If you have an idea for improving the workflow or making activity-based workspace setup more useful, feel free to open an issue or start a discussion.
-
-## 📄 License
+## License
 
 A license has not yet been specified for this project.
 
