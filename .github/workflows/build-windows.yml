@@ -1,0 +1,42 @@
+name: Build Windows MVP
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Intento.sln
+
+      - name: Build
+        run: dotnet build Intento.sln -c Release --no-restore
+
+      - name: Publish x64
+        run: >-
+          dotnet publish src/Intento.App/Intento.App.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o artifacts/Intento-win-x64
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Intento-win-x64
+          path: artifacts/Intento-win-x64/
+          if-no-files-found: error
