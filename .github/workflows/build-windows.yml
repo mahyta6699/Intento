@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -34,9 +37,27 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -o artifacts/Intento-win-x64
 
+      - name: Rename executable
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path artifacts/Intento-win-x64 -Filter *.exe | Select-Object -First 1
+          if (-not $exe) { throw 'No executable was produced by dotnet publish.' }
+          Rename-Item -Path $exe.FullName -NewName 'Intento.exe'
+
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: Intento-win-x64
           path: artifacts/Intento-win-x64/
           if-no-files-found: error
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "mvp-$($env:GITHUB_RUN_NUMBER)"
+          gh release create $tag `
+            artifacts/Intento-win-x64/Intento.exe `
+            --title "Intento MVP $tag" `
+            --generate-notes
