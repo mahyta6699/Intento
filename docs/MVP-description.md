@@ -181,4 +181,3 @@ After my changes, you have the beginning of the **actual application**:
 
 The most logical next piece is the **Activity Editor**, because that turns the current hard-coded/default activities into something you can actually configure yourself.
 
-Would you like me to build **the Activity Editor next**, or **Windows startup integration** first?
