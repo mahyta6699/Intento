@@ -48,39 +48,45 @@ jobs:
           --no-restore
           -warnaserror
 
-      - name: Publish x64
+      - name: Publish x64 self-contained
         run: >-
           dotnet publish src/Intento.App/Intento.App.csproj
           -c Release
           -p:Platform=x64
           -r win-x64
           --self-contained true
-          -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:PublishSingleFile=false
           -p:DebugType=None
           -p:DebugSymbols=false
           -o artifacts/Intento-win-x64
 
-      - name: Validate executable
+      - name: Validate deployment
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Path artifacts/Intento-win-x64 -Filter *.exe -File | Select-Object -First 1
+          $exe = Join-Path $pwd 'artifacts/Intento-win-x64/Intento.App.exe'
+          if (-not (Test-Path $exe)) {
+            $exe = Get-ChildItem -Path artifacts/Intento-win-x64 -Filter *.exe -File |
+              Where-Object { $_.Name -notmatch 'uninstall|setup|bootstrapper' } |
+              Select-Object -First 1 |
+              Select-Object -ExpandProperty FullName
+          }
           if (-not $exe) {
-            throw 'No executable was produced by dotnet publish.'
+            throw 'No application executable was produced by dotnet publish.'
           }
-          if ($exe.Length -lt 1MB) {
-            throw "Executable is unexpectedly small: $($exe.Length) bytes."
-          }
-          if ($exe.Name -ne 'Intento.exe') {
-            Rename-Item -Path $exe.FullName -NewName 'Intento.exe'
-          }
-          Get-Item artifacts/Intento-win-x64/Intento.exe | Format-List FullName,Length,LastWriteTime
+          Copy-Item $exe 'artifacts/Intento-win-x64/Intento.exe' -Force
+          Get-Item 'artifacts/Intento-win-x64/Intento.exe' | Format-List FullName,Length,LastWriteTime
+          Get-ChildItem 'artifacts/Intento-win-x64' -File | Select-Object Name,Length
 
-      - name: Upload EXE artifact
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path 'artifacts/Intento-win-x64/*' -DestinationPath 'artifacts/Intento-win-x64.zip' -Force
+
+      - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
           name: Intento-win-x64
-          path: artifacts/Intento-win-x64/Intento.exe
+          path: artifacts/Intento-win-x64.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -92,7 +98,7 @@ jobs:
         run: |
           $tag = "mvp-$($env:GITHUB_RUN_NUMBER)"
           gh release create $tag `
-            artifacts/Intento-win-x64/Intento.exe `
+            artifacts/Intento-win-x64.zip `
             --title "Intento MVP $tag" `
             --target $env:GITHUB_SHA `
             --generate-notes
