@@ -4,6 +4,10 @@
 
 Intento is a Windows productivity application that prepares your workspace around your intention. Choose an activity and Intento opens its configured applications, websites, and folders together.
 
+## Product documentation
+
+- [Persian product idea and MVP specification](docs/PRODUCT_SPEC_FA.md)
+
 ## MVP
 
 The first runnable MVP is now scaffolded as a **.NET 10 + WinUI 3** desktop application.
