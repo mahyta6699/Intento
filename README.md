@@ -7,6 +7,7 @@ Intento is a Windows productivity application that prepares your workspace aroun
 ## Product documentation
 
 - [Persian product idea and MVP specification](docs/PRODUCT_SPEC_FA.md)
+- [Technology stack and rationale](docs/STACK.md)
 
 ## MVP
 
