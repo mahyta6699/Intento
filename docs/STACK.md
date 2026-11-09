@@ -1,298 +1,153 @@
 # Intento — Technology Stack
 
-Intento is planned as a native Windows desktop productivity application. The stack is chosen to provide a modern Windows UI, reliable operating-system integration, simple local configuration, and a maintainable architecture.
+> وضعیت: تصمیم پیشنهادی برای MVP؛ فناوری‌های موجود پروژه حفظ می‌شوند و جزئیات اجرایی در ادامه مشخص شده‌اند.
 
-## 🧱 Core Stack
+## 1. خلاصه استک
 
-| Layer | Technology | Purpose |
+| لایه | فناوری | نقش |
 |---|---|---|
-| Language | **C#** | Primary application language |
-| Runtime | **.NET 10** | Application runtime and modern .NET APIs |
-| UI | **WinUI 3** | Native Windows user interface |
-| Windows Platform | **Windows App SDK** | Windows integration and desktop application APIs |
-| Architecture | **MVVM** | Separation of UI, application logic, and state |
-| Configuration | **JSON** | Store activities and launch targets |
-| Local Storage | **Windows AppData** | Persist user configuration locally |
-| Testing | **xUnit** | Unit and application-level testing |
-| Dependencies | **NuGet** | .NET package management |
-| Version Control | **Git + GitHub** | Source control and collaboration |
-| CI | **GitHub Actions** | Automated build and test workflows |
-| Packaging | **MSIX** | Windows application packaging and distribution |
-
-## 🖥️ Application Architecture
-
-Intento will use a layered architecture with MVVM for the presentation layer.
-
-```text
-┌─────────────────────────────────────┐
-│             Intento UI              │
-│          WinUI 3 / MVVM             │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│        Intento Application          │
-│                                     │
-│  Activity Manager                   │
-│  Workspace Manager                  │
-│  Configuration Manager              │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│           Launch Services           │
-│                                     │
-│  Application Launcher               │
-│  URL Launcher                       │
-│  Folder Launcher                    │
-└──────────────────┬──────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────┐
-│             Windows OS              │
-│  Applications │ Browser │ Explorer │
-└─────────────────────────────────────┘
-```
+| زبان | C# | منطق برنامه و تعامل با ویندوز |
+| Runtime | .NET 10 (LTS) | اجرای برنامه و APIهای مدرن .NET |
+| رابط کاربری | WinUI 3 + Windows App SDK | رابط دسکتاپ بومی ویندوز |
+| معماری UI | MVVM | جداسازی رابط کاربری از منطق |
+| ابزار MVVM | CommunityToolkit.Mvvm | کاهش کد تکراری برای ViewModel و Command |
+| تزریق وابستگی | Microsoft.Extensions.DependencyInjection | مدیریت سرویس‌ها و وابستگی‌ها |
+| ذخیره‌سازی MVP | System.Text.Json در Local AppData | ذخیره محلی گروه‌ها و آیتم‌ها |
+| اجرای منابع | System.Diagnostics.Process و ShellExecute | اجرای برنامه‌ها و بازکردن URL، فایل و پوشه |
+| تست | xUnit | تست منطق و سرویس‌ها |
+| CI | GitHub Actions با Windows runner | Build و اجرای تست‌ها |
+| بسته‌بندی | MSIX | نصب و توزیع برنامه |
 
-## 🎨 UI Layer
+## 2. چرا این استک را انتخاب می‌کنیم؟
 
-### WinUI 3
+### C# و .NET 10 LTS
 
-WinUI 3 will be used to build the desktop interface because Intento is designed specifically for Windows.
-
-Responsibilities include:
+Intento باید با سیستم‌عامل کار کند: برنامه اجرا کند، مسیر فایل‌ها را بررسی کند، تنظیمات را ذخیره کند و در صورت نیاز هنگام ورود کاربر به ویندوز اجرا شود. C# و .NET برای این نوع کارها APIهای بالغ و ابزارهای توسعه و اشکال‌زدایی قوی دارند. .NET 10 نیز نسخه LTS است و برای پروژه‌ای که قرار است نگهداری شود انتخاب مناسبی است.
 
-- Activity selection screen
-- Activity creation and editing
-- Settings
-- Launch progress and status feedback
-- Native Windows look and feel
+### WinUI 3 و Windows App SDK
 
-### MVVM
+محصول فعلاً مشخصاً برای ویندوز طراحی شده است. WinUI 3 رابطی بومی با کنترل‌ها و ظاهر هماهنگ با ویندوز فراهم می‌کند و اتصال به قابلیت‌های سیستم‌عامل را مستقیم نگه می‌دارد. ساخت UI وبی با Electron یا WebView برای این نیاز فعلاً لایه و پیچیدگی اضافه‌ای ایجاد می‌کند.
 
-The UI will follow the Model-View-ViewModel pattern.
+**هزینه این تصمیم:** نسخه فعلی محصول Windows-only خواهد بود. اگر پشتیبانی از macOS یا Linux به الزام واقعی تبدیل شد، باید فناوری رابط کاربری دوباره ارزیابی شود.
 
-```text
-View
- │
- ▼
-ViewModel
- │
- ▼
-Application Services
- │
- ▼
-Models / Storage / Launchers
-```
+### MVVM و CommunityToolkit.Mvvm
 
-This keeps UI code separate from business logic and makes the application easier to test and maintain.
+صفحه انتخاب گروه، ویرایش گروه‌ها، تنظیمات و وضعیت اجرای آیتم‌ها منطق و state دارند. MVVM این منطق را از View جدا می‌کند و تست‌پذیری را بهتر می‌سازد. CommunityToolkit.Mvvm پیاده‌سازی Propertyها و Commandهای متداول را کوتاه‌تر می‌کند.
 
-## ⚙️ Application Layer
+### JSON برای MVP، نه دیتابیس از روز اول
 
-The application layer contains the core Intento functionality.
+در نسخه اول داده‌ها عمدتاً فهرست گروه‌ها و آیتم‌های آن‌ها هستند. JSON خوانا، ساده، قابل پشتیبان‌گیری و بدون نیاز به سرویس دیتابیس است. فایل باید در مسیر قابل‌نوشتن کاربر، مانند %LocalAppData%/Intento/activities.json، ذخیره شود؛ نه کنار فایل اجرایی برنامه.
 
-### Activity Manager
-
-Responsible for:
-
-- Creating activities
-- Updating activities
-- Deleting activities
-- Selecting an activity
-- Managing activity metadata
-
-Example activities:
-
-- Job
-- Learning
-- Research
-- Workout
+ذخیره‌سازی باید با فایل موقت و جایگزینی امن انجام شود تا بسته‌شدن ناگهانی برنامه فایل اصلی را خراب نکند. اگر بعداً تاریخچه اجرا، جست‌وجوی پیشرفته، داده‌های زیاد یا همگام‌سازی اضافه شد، SQLite را بررسی می‌کنیم.
 
-### Workspace Manager
+### APIهای ویندوز برای اجرای منابع
 
-Responsible for managing the resources associated with an activity.
+- **App:** اجرای برنامه از مسیر مشخص، با آرگومان‌های اختیاری.
+- **URL:** بازکردن لینک با مرورگر پیش‌فرض کاربر.
+- **File/Folder:** بازکردن فایل یا پوشه با برنامه پیش‌فرض ویندوز.
 
-An activity can contain:
+برای این کار یک قرارداد مشترک مانند ILauncher و پیاده‌سازی‌های جداگانه برای برنامه، URL و مسیر در نظر می‌گیریم. شکست یک آیتم نباید اجرای بقیه آیتم‌های گروه را متوقف کند؛ نتیجه هر آیتم باید ثبت و به کاربر گزارش شود. ورودی‌ها اعتبارسنجی شوند و آرگومان‌ها به‌شکل امن به Process API داده شوند.
 
-- Applications
-- Websites
-- Folders
+## 3. معماری پیشنهادی
 
-Example:
+    WinUI Views
+        |
+        v
+    ViewModels (MVVM)
+        |
+        v
+    Application Services
+        |-- ActivityService
+        |-- LaunchService
+        |-- SettingsService
+        |
+        v
+    Infrastructure
+        |-- JsonActivityRepository
+        |-- WindowsLaunchers
+        |-- StartupRegistrationService
 
-```text
-Job
-├── Microsoft Excel
-├── Browser → Company Portal
-├── Browser → Project Management
-└── Folder → C:\Projects\Work
-```
+مسئولیت‌ها:
 
-### Configuration Manager
+- **Views:** نمایش گروه‌ها، آیتم‌ها و تنظیمات؛ بدون منطق اجرای سیستم‌عامل.
+- **ViewModels:** نگهداری state صفحه و فرمان‌های کاربر.
+- **Application Services:** هماهنگی عملیات، مانند اجرای یک گروه.
+- **Repositories:** خواندن و نوشتن داده‌ها.
+- **Windows adapters:** پیاده‌سازی قابلیت‌های وابسته به ویندوز.
 
-Responsible for loading and saving the user's activities and launch targets.
+برای MVP لازم نیست از روز اول چندین پروژه و لایه پیچیده ایجاد کنیم. ابتدا مرزبندی را در پوشه‌ها و کلاس‌ها رعایت می‌کنیم و در صورت رشد کد، پروژه‌ها را جدا می‌کنیم.
 
-The initial implementation can use JSON stored in the user's local AppData directory.
+## 4. مدل داده
 
-## 🚀 Launch Services
+- **Activity:** گروه قابل انتخاب، شامل شناسه، نام، توضیح و فهرست آیتم‌ها.
+- **ActivityItem:** یک منبع از نوع App، Url یا Path.
 
-Intento needs to launch different types of resources. These should be separated into dedicated services.
+فیلدهای پیشنهادی ActivityItem:
 
-### Application Launcher
+| فیلد | توضیح |
+|---|---|
+| Id | شناسه یکتا |
+| Name | نام نمایشی |
+| Type | App، Url یا Path |
+| Target | مسیر برنامه، URL یا مسیر فایل/پوشه |
+| Arguments | آرگومان اختیاری برای برنامه |
+| IsEnabled | فعال یا غیرفعال بودن آیتم |
+| Order | ترتیب نمایش و اجرا |
 
-Uses .NET process APIs and Windows integration to launch installed desktop applications.
+در MVP اجرای ترتیبی کافی است. اجرای موازی، وابستگی بین آیتم‌ها و گردش‌کارهای پیچیده را تا زمان اثبات نیاز اضافه نمی‌کنیم.
 
-### URL Launcher
+## 5. راه‌اندازی هنگام ورود به ویندوز
 
-Opens websites using the user's default browser.
+راه‌اندازی خود Intento با اجرای خودکار یک Activity دو قابلیت جدا هستند:
 
-### Folder Launcher
+1. کاربر گزینه اجرای Intento هنگام ورود به ویندوز را در تنظیمات فعال می‌کند.
+2. برنامه با سازوکار مناسب اپلیکیشن بسته‌بندی‌شده ویندوز و با رضایت کاربر ثبت می‌شود.
+3. هنگام ورود، خود Intento باز می‌شود و گروه‌ها را نشان می‌دهد.
+4. کاربر گروه موردنظر را انتخاب می‌کند.
 
-Opens directories using Windows Explorer.
+**پیش‌فرض ایمن:** ورود به ویندوز نباید بدون اجازه کاربر همه آیتم‌های یک گروه را اجرا کند. اجرای خودکار یک گروه، اگر اضافه شود، باید گزینه‌ای جداگانه و اختیاری باشد. جزئیات Startup باید با نوع بسته‌بندی نهایی و نسخه‌های هدف Windows App SDK آزمایش شود.
 
-A common launcher abstraction can keep these implementations consistent:
+## 6. تست و کیفیت
 
-```text
-ILauncher
-   │
-   ├── ApplicationLauncher
-   ├── UrlLauncher
-   └── FolderLauncher
-```
+- xUnit برای تست مدل‌ها، اعتبارسنجی، ذخیره/بازیابی JSON و منطق اجرای گروه.
+- تزریق وابستگی برای جایگزین‌کردن launcher واقعی با نسخه mock در تست‌ها؛ تست‌ها نباید مرورگر یا برنامه واقعی کاربر را باز کنند.
+- تست دستی روی Windows برای App، URL، File و Folder.
+- تست سناریوهای خطا: مسیر نامعتبر، برنامه نصب‌نشده، فایل حذف‌شده و خطای ذخیره‌سازی.
+- GitHub Actions برای restore، build و test روی Windows runner.
 
-## 🪟 Windows Integration
+تست UI خودکار را می‌توان بعداً اضافه کرد؛ در MVP تست واحد و چک‌لیست تست دستی اولویت دارند.
 
-Intento will use Windows APIs and the Windows App SDK for operating-system integration such as:
+## 7. بسته‌بندی و انتشار
 
-- Windows startup behavior
-- Desktop application launching
-- Opening folders in Explorer
-- Opening URLs with the default browser
-- Windows application lifecycle
-- Native Windows packaging
+MSIX گزینه پیشنهادی برای توزیع نسخه ویندوزی است و نصب و حذف برنامه را ساختارمند می‌کند. قبل از انتشار عمومی، امضای بسته، گواهی لازم و نصب روی یک سیستم تمیز باید آزمایش شوند. CI در ابتدا restore، build و test را انجام می‌دهد؛ ساخت بسته انتشار را می‌توان در مرحله بعد به workflow اضافه کرد.
 
-## 💾 Data Storage
+## 8. چرا فعلاً فناوری‌های دیگر را انتخاب نمی‌کنیم؟
 
-The first version should keep configuration simple and local.
+- **Electron / WebView:** برای محصول Windows-only که به اجرای برنامه‌ها و مسیرهای محلی نیاز دارد، پیچیدگی اضافه دارد.
+- **React / Node.js به‌عنوان هسته:** مزیت کافی نسبت به C# و APIهای ویندوز برای این نیازها ندارد.
+- **SQLite از روز اول:** برای چند گروه و آیتم محلی، JSON ساده‌تر است.
+- **Microservices یا Clean Architecture سنگین:** اپلیکیشن دسکتاپ محلی به این میزان زیرساخت نیاز ندارد.
+- **Backend و Cloud Sync:** خارج از MVP است و مسائل حساب کاربری، امنیت و تعارض داده را اضافه می‌کند.
 
-### JSON
+## 9. ترتیب پیاده‌سازی
 
-Example configuration:
+1. تثبیت مدل Activity و ActivityItem و قرارداد JSON.
+2. تکمیل LaunchService برای App، URL و Path با مدیریت خطای مستقل.
+3. ساخت ViewModelها و جریان انتخاب و اجرای گروه.
+4. افزودن ایجاد، ویرایش، حذف و مرتب‌سازی گروه‌ها و آیتم‌ها.
+5. افزودن تست‌های واحد و GitHub Actions.
+6. پیاده‌سازی Startup اختیاری و آزمایش با بسته‌بندی واقعی.
+7. آماده‌سازی MSIX و چک‌لیست انتشار.
 
-```json
-{
-  "activities": [
-    {
-      "name": "Job",
-      "items": [
-        {
-          "type": "application",
-          "target": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE"
-        },
-        {
-          "type": "url",
-          "target": "https://example.com"
-        },
-        {
-          "type": "folder",
-          "target": "C:\\Projects\\Work"
-        }
-      ]
-    }
-  ]
-}
-```
+## 10. چه زمانی استک را بازنگری کنیم؟
 
-The exact schema can evolve as the application develops.
+- الزام واقعی برای macOS یا Linux: ارزیابی UI چندسکویی.
+- نیاز به تاریخچه، جست‌وجوی پیچیده یا داده حجیم: ارزیابی SQLite.
+- نیاز به همگام‌سازی چند دستگاه: طراحی جداگانه لایه Sync با توجه به حریم خصوصی.
+- نیاز به زمان‌بندی و گردش‌کار پیچیده: توسعه مدل اجرا و صف عملیات.
 
-## 🧪 Testing
+---
 
-**xUnit** will be used for automated tests.
+## جمع‌بندی
 
-Priority areas for testing:
-
-- Activity creation and editing
-- Configuration serialization/deserialization
-- Activity selection
-- Launcher behavior
-- Invalid or missing paths
-- Invalid URLs
-- Configuration recovery
-
-The UI itself can be tested separately where appropriate, while most business logic should remain independently testable.
-
-## 🔧 Development Tools
-
-Recommended development environment:
-
-- **Visual Studio 2022** with Windows desktop development tooling
-- **.NET SDK**
-- **Windows 10/11** development environment
-- **Git**
-- **GitHub**
-
-## 🔄 CI/CD
-
-GitHub Actions will be used for continuous integration.
-
-A basic CI workflow should:
-
-1. Restore NuGet dependencies.
-2. Build the solution.
-3. Run automated tests.
-4. Report build/test failures.
-
-Later, the workflow can be extended to create packaged releases.
-
-## 📦 Packaging
-
-Intento is intended to be distributed as a Windows desktop application.
-
-**MSIX** is the planned packaging format because it provides a standardized Windows application package and integrates with the Windows application ecosystem.
-
-## 📁 Suggested Project Structure
-
-```text
-Intento/
-├── src/
-│   ├── Intento.App/
-│   │   ├── Views/
-│   │   ├── ViewModels/
-│   │   ├── Assets/
-│   │   └── App.xaml
-│   │
-│   ├── Intento.Core/
-│   │   ├── Models/
-│   │   ├── Interfaces/
-│   │   └── Services/
-│   │
-│   └── Intento.Infrastructure/
-│       ├── Storage/
-│       ├── Launchers/
-│       └── Windows/
-│
-├── tests/
-│   └── Intento.Tests/
-│
-├── docs/
-├── README.md
-├── STACK.md
-└── Intento.sln
-```
-
-## 🗺️ Development Direction
-
-The stack should remain intentionally lightweight during the early stages of Intento.
-
-The initial implementation should focus on:
-
-1. Creating activity groups.
-2. Adding applications, URLs, and folders.
-3. Saving configuration locally.
-4. Selecting an activity.
-5. Launching all associated resources.
-6. Integrating with Windows startup.
-
-Additional infrastructure such as a database, cloud synchronization, or an external backend should only be introduced if the application's requirements eventually justify it.
-
-> **Note:** This is the proposed technology stack for Intento. The project is currently in the planning / early-development stage, so individual technologies and architectural decisions may change during implementation.
+**C# + .NET 10 LTS + WinUI 3 + MVVM + JSON** متناسب‌ترین نقطه شروع برای Intento است: بومی ویندوز، مناسب برای تعامل با سیستم‌عامل، قابل تست و بدون زیرساخت غیرضروری. این انتخاب MVP را ساده نگه می‌دارد و در عین حال راه ارتقا به SQLite، همگام‌سازی یا UI چندسکویی را در آینده نمی‌بندد.
