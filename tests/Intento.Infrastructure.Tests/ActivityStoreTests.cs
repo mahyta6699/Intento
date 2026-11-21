@@ -1,3 +1,4 @@
+using Xunit;
 using Intento.Core.Models;
 using Intento.Infrastructure;
 
