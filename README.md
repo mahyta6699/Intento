@@ -72,9 +72,9 @@ The persisted JSON model supports application paths, URLs, and folders:
     "Name": "Job",
     "Icon": "💼",
     "Items": [
-      { "Name": "Excel", "Type": 0, "Target": "C:\\\\Program Files\\\\Microsoft Office\\\\root\\\\Office16\\\\EXCEL.EXE" },
+      { "Name": "Excel", "Type": 0, "Target": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE" },
       { "Name": "Company", "Type": 1, "Target": "https://example.com" },
-      { "Name": "Project", "Type": 2, "Target": "C:\\\\Projects\\\\MyProject" }
+      { "Name": "Project", "Type": 2, "Target": "C:\\Projects\\MyProject" }
     ]
   }
 ]
