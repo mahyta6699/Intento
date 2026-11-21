@@ -18,37 +18,37 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 - [ ] Add `.gitignore`
 - [ ] Add basic application metadata
 - [ ] Configure NuGet package management
-- [ ] Add the test project
+- [x] Add the test project
 - [ ] Verify the application builds and launches
 
 ## Phase 2 — Core Domain Model
 
-- [ ] Create the `Activity` model
+- [x] Create the `Activity` model
 - [ ] Create the `LaunchItem` model
-- [ ] Define launch item types
-  - [ ] Application
-  - [ ] URL
-  - [ ] Folder
+- [x] Define launch item types
+  - [x] Application
+  - [x] URL
+  - [x] Folder
 - [ ] Define activity properties
-  - [ ] Name
-  - [ ] Icon
-  - [ ] Launch items
+  - [x] Name
+  - [x] Icon
+  - [x] Launch items
 - [ ] Add validation for activity names
 - [ ] Add validation for launch targets
 - [ ] Define interfaces for core services
 
 ## Phase 3 — Configuration & Persistence
 
-- [ ] Create the configuration schema
-- [ ] Implement JSON serialization
-- [ ] Implement JSON deserialization
-- [ ] Create the local AppData storage location
-- [ ] Implement configuration loading
-- [ ] Implement configuration saving
-- [ ] Handle missing configuration files
-- [ ] Handle invalid/corrupted configuration files
+- [x] Create the configuration schema
+- [x] Implement JSON serialization
+- [x] Implement JSON deserialization
+- [x] Create the local AppData storage location
+- [x] Implement configuration loading
+- [x] Implement configuration saving
+- [x] Handle missing configuration files
+- [x] Handle invalid/corrupted configuration files
 - [ ] Add configuration versioning support
-- [ ] Add tests for persistence
+- [x] Add tests for persistence
 
 ## Phase 4 — Launch System
 
@@ -90,11 +90,11 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 - [ ] Implement activity deletion
 - [ ] Implement activity selection
 - [ ] Implement activity duplication
-- [ ] Add default activities
-  - [ ] Job
-  - [ ] Learning
-  - [ ] Research
-  - [ ] Workout
+- [x] Add default activities
+  - [x] Job
+  - [x] Learning
+  - [x] Research
+  - [x] Workout
 - [ ] Allow custom activity names
 - [ ] Allow custom activity icons
 - [ ] Add activity validation
@@ -104,9 +104,9 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 ### Main Activity Screen
 
 - [ ] Design the main Intento window
-- [ ] Display available activities
-- [ ] Add activity selection controls
-- [ ] Add visual activity icons
+- [x] Display available activities
+- [x] Add activity selection controls
+- [x] Add visual activity icons
 - [ ] Add empty-state UI
 
 ### Activity Editor
@@ -164,7 +164,7 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 - [ ] Handle missing executables
 - [ ] Handle deleted folders
 - [ ] Handle invalid URLs
-- [ ] Handle inaccessible files/directories
+- [x] Handle inaccessible persistence files gracefully
 - [ ] Prevent one failed launch from blocking the remaining items
 - [ ] Add diagnostic logging
 - [ ] Define safe logging rules that do not expose sensitive user data
@@ -177,15 +177,15 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 - [ ] Test activity editing
 - [ ] Test activity deletion
 - [ ] Test activity validation
-- [ ] Test configuration serialization
-- [ ] Test configuration deserialization
-- [ ] Test configuration recovery
+- [x] Test configuration serialization
+- [x] Test configuration deserialization
+- [x] Test configuration recovery
 - [ ] Test launcher selection
 - [ ] Test URL validation
 
 ### Integration Tests
 
-- [ ] Test configuration persistence on Windows
+- [x] Test configuration persistence with isolated temporary files
 - [ ] Test application launching
 - [ ] Test URL launching
 - [ ] Test folder launching
@@ -235,7 +235,8 @@ Build a Windows application that lets a user choose an activity such as **Job**,
 - [x] Create `STACK.md`
 - [x] Create `TASKS.md`
 - [ ] Create `ARCHITECTURE.md`
-- [ ] Document configuration format
+- [x] Document configuration format
+- [x] Document persistence and recovery behavior
 - [ ] Document development setup
 - [ ] Document build instructions
 - [ ] Document release process
@@ -255,9 +256,9 @@ The first usable version of Intento should be able to:
 - [ ] Add applications to activities
 - [ ] Add URLs to activities
 - [ ] Add folders to activities
-- [ ] Save activities locally
-- [ ] Select an activity
-- [ ] Launch all valid items associated with the activity
+- [x] Save activities locally with safe recovery behavior
+- [x] Select an activity
+- [x] Launch all valid items associated with the activity
 - [ ] Report failed launches without crashing
 - [ ] Optionally start with Windows
 
@@ -281,6 +282,5 @@ These should be considered after the MVP rather than requirements for the first 
 - [ ] Global keyboard shortcut
 - [ ] System tray mode
 - [ ] Windows notifications
-- [ ] Microsoft Store distribution
 
 > **Note:** This task list is a development plan rather than a fixed specification. Tasks and priorities can change as Intento is implemented and tested.

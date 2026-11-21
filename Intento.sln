@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intento.Core", "src\Intento
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intento.Infrastructure", "src\Intento.Infrastructure\Intento.Infrastructure.csproj", "{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1003}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intento.Infrastructure.Tests", "tests\Intento.Infrastructure.Tests\Intento.Infrastructure.Tests.csproj", "{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1004}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -26,5 +28,9 @@ Global
 		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1003}.Debug|x64.Build.0 = Debug|Any CPU
 		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1003}.Release|x64.ActiveCfg = Release|Any CPU
 		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1003}.Release|x64.Build.0 = Release|Any CPU
+		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1004}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1004}.Debug|x64.Build.0 = Debug|Any CPU
+		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1004}.Release|x64.ActiveCfg = Release|Any CPU
+		{8D1C8A1D-6A6A-4F17-8C0E-1B7E6A1C1004}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

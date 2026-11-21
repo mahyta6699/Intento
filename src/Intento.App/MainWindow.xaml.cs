@@ -29,14 +29,22 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadActivitiesAsync()
     {
-        var activities = await _store.LoadAsync();
-        if (activities.Count == 0)
+        try
         {
-            activities = CreateDefaults();
-            await _store.SaveAsync(activities);
-        }
+            var activities = await _store.LoadAsync();
+            if (activities.Count == 0)
+            {
+                activities = CreateDefaults();
+                await _store.SaveAsync(activities);
+            }
 
-        ActivitiesRepeater.ItemsSource = activities;
+            ActivitiesRepeater.ItemsSource = activities;
+        }
+        catch (ActivityStoreException exception)
+        {
+            ActivitiesRepeater.ItemsSource = Array.Empty<Activity>();
+            await ShowPersistenceErrorAsync(exception);
+        }
     }
 
     private async void ActivityButton_Click(object sender, RoutedEventArgs e)
@@ -48,6 +56,19 @@ public sealed partial class MainWindow : Window
     private async void Reload_Click(object sender, RoutedEventArgs e) => await LoadActivitiesAsync();
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
+
+    private async Task ShowPersistenceErrorAsync(ActivityStoreException exception)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Could not access saved activities",
+            Content = $"{exception.Message}\n\nFile: {exception.FilePath}",
+            CloseButtonText = "OK",
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
 
     private static IReadOnlyList<Activity> CreateDefaults() =>
     [
