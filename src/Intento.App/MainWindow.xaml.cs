@@ -71,10 +71,11 @@ public sealed partial class MainWindow : Window
     }
 
     private static IReadOnlyList<Activity> CreateDefaults() =>
-    [
-        new Activity { Name = "Job", Icon = "💼" },
-        new Activity { Name = "Learning", Icon = "📚" },
-        new Activity { Name = "Research", Icon = "🔬" },
-        new Activity { Name = "Workout", Icon = "🏋️" }
-    ];
+        new Activity[]
+        {
+            new() { Name = "Job", Icon = "💼" },
+            new() { Name = "Learning", Icon = "📚" },
+            new() { Name = "Research", Icon = "🔬" },
+            new() { Name = "Workout", Icon = "🏋️" }
+        };
 }
