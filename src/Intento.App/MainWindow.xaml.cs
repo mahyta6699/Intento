@@ -2,6 +2,7 @@ using Intento.Core.Models;
 using Intento.Infrastructure;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Intento.App;
 
@@ -81,15 +82,49 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void ActivityButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: Activity activity } button)
+            return;
+
+        var menu = new MenuFlyout();
+        var deleteItem = new MenuFlyoutItem
+        {
+            Text = "Delete",
+            Tag = activity
+        };
+        deleteItem.Click += DeleteActivity_Click;
+        menu.Items.Add(deleteItem);
+        menu.ShowAt(button, e.GetPosition(button));
+        e.Handled = true;
+    }
+
+    private async void DeleteActivity_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuFlyoutItem { Tag: Activity activity })
+            return;
+
+        var updatedActivities = _activities
+            .Where(existing => existing.Id != activity.Id)
+            .ToList();
+
+        try
+        {
+            await _store.SaveAsync(updatedActivities);
+            _activities = updatedActivities;
+            ActivitiesRepeater.ItemsSource = _activities;
+        }
+        catch (ActivityStoreException exception)
+        {
+            await ShowPersistenceErrorAsync(exception);
+        }
+    }
+
     private async void ActivityButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: Activity activity })
             await _launcher.LaunchAsync(activity);
     }
-
-    private async void Reload_Click(object sender, RoutedEventArgs e) => await LoadActivitiesAsync();
-
-    private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
     private async Task ShowPersistenceErrorAsync(ActivityStoreException exception)
     {
