@@ -21,9 +21,8 @@ No migration is required for existing valid activity JSON files.
 - A missing file represents an empty activity collection.
 - A valid JSON `null` value also resolves to an empty collection.
 - Malformed JSON and expected file-system failures are surfaced as `ActivityStoreException`, including the affected path and original exception.
-- A malformed file is never silently replaced or deleted; keep it intact for manual recovery.
-
-The UI catches persistence exceptions and presents an actionable error instead of allowing an unhandled storage exception to terminate the app.
+- A malformed or unreadable file is never silently replaced or deleted; keep it intact for manual recovery.
+- After a failed load, the store rejects writes for the rest of that store instance. The UI also disables activity creation after a load failure. This prevents a user action from overwriting data that could not be read or recovered. Fix the file/access problem and restart the application to load it again.
 
 ## Write behavior
 
@@ -38,7 +37,7 @@ Keeping the temporary file on the same volume allows the final operation to be a
 
 `IActivityFileSystem` isolates file access from the repository logic. Production uses `PhysicalActivityFileSystem`; tests can inject a fake implementation and/or a temporary file path through the `ActivityStore` constructor.
 
-The persistence test suite covers round-trip data for multiple activities and every workspace item type, missing files, malformed JSON recovery, inaccessible reads, failed replacement, and the resolved Local AppData path.
+The persistence test suite covers full round-trip data for multiple activities and every workspace item type, missing files, malformed JSON recovery (including blocking subsequent overwrites), inaccessible reads, failed replacement, and the resolved Local AppData path.
 
 Run tests on a .NET 10 SDK:
 
