@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Xunit;
 using Intento.Core.Models;
 using Intento.Infrastructure;
@@ -26,24 +27,19 @@ public sealed class ActivityStoreTests
                     new WorkspaceItem { Name = "Project", Type = WorkspaceItemType.Folder, Target = @"C:\Projects\Intento" }
                 ]
             },
-            new Activity { Id = "learn-1", Name = "Learning", Icon = "📚" }
+            new Activity
+            {
+                Id = "learn-1",
+                Name = "Learning",
+                Icon = "📚",
+                Items = [new WorkspaceItem { Name = "Course", Type = WorkspaceItemType.Url, Target = "https://example.com/course" }]
+            }
         };
 
         await store.SaveAsync(activities);
         var loaded = await store.LoadAsync();
 
-        Assert.Equal(2, loaded.Count);
-        Assert.Equal(activities[0].Id, loaded[0].Id);
-        Assert.Equal(activities[0].Name, loaded[0].Name);
-        Assert.Equal(activities[0].Icon, loaded[0].Icon);
-        Assert.Equal(activities[0].Items.Count, loaded[0].Items.Count);
-        for (var index = 0; index < activities[0].Items.Count; index++)
-        {
-            Assert.Equal(activities[0].Items[index].Name, loaded[0].Items[index].Name);
-            Assert.Equal(activities[0].Items[index].Type, loaded[0].Items[index].Type);
-            Assert.Equal(activities[0].Items[index].Target, loaded[0].Items[index].Target);
-        }
-        Assert.Equal(activities[1].Id, loaded[1].Id);
+        Assert.Equal(JsonSerializer.Serialize(activities), JsonSerializer.Serialize(loaded));
     }
 
     [Fact]
@@ -69,6 +65,24 @@ public sealed class ActivityStoreTests
         var exception = await Assert.ThrowsAsync<ActivityStoreException>(() => store.LoadAsync());
 
         Assert.Equal(path, exception.FilePath);
+        Assert.IsType<JsonException>(exception.InnerException);
+        Assert.Equal(invalidJson, await File.ReadAllTextAsync(path));
+    }
+
+    [Fact]
+    public async Task SaveAsync_AfterMalformedLoad_DoesNotOverwriteRecoveryFile()
+    {
+        using var directory = new TemporaryDirectory();
+        var path = Path.Combine(directory.Path, "activities.json");
+        const string invalidJson = "{ broken-but-recoverable";
+        await File.WriteAllTextAsync(path, invalidJson);
+        var store = new ActivityStore(filePath: path);
+
+        await Assert.ThrowsAsync<ActivityStoreException>(() => store.LoadAsync());
+        var saveException = await Assert.ThrowsAsync<ActivityStoreException>(() =>
+            store.SaveAsync([new Activity { Name = "Must not replace recovery data" }]));
+
+        Assert.Contains("previous load failed", saveException.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(invalidJson, await File.ReadAllTextAsync(path));
     }
 
@@ -86,7 +100,7 @@ public sealed class ActivityStoreTests
     {
         using var directory = new TemporaryDirectory();
         var path = Path.Combine(directory.Path, "activities.json");
-        const string previousJson = "[{\"Name\":\"Existing\"}]";
+        const string previousJson = "[{\\"Name\\":\\"Existing\\"}]";
         await File.WriteAllTextAsync(path, previousJson);
         var fileSystem = new FailingFileSystem { ReplaceFailure = new IOException("disk error") };
         var store = new ActivityStore(fileSystem, path);
