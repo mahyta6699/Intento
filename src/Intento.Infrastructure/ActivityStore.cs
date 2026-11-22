@@ -11,6 +11,7 @@ public sealed class ActivityStore
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     private readonly IActivityFileSystem _fileSystem;
+    private Exception? _loadFailure;
 
     public ActivityStore(IActivityFileSystem? fileSystem = null, string? filePath = null)
     {
@@ -29,14 +30,20 @@ public sealed class ActivityStore
         try
         {
             if (!_fileSystem.FileExists(FilePath))
+            {
+                _loadFailure = null;
                 return [];
+            }
 
             var json = await _fileSystem.ReadAllTextAsync(FilePath);
-            return JsonSerializer.Deserialize<List<Activity>>(json) ?? [];
+            var activities = JsonSerializer.Deserialize<List<Activity>>(json) ?? [];
+            _loadFailure = null;
+            return activities;
         }
         catch (JsonException exception)
         {
-            // Never overwrite or move a malformed file: it may be the only recoverable copy.
+            // Keep the failure state so a later SaveAsync cannot destroy the only recoverable copy.
+            _loadFailure = exception;
             throw new ActivityStoreException(
                 "The activities file contains invalid JSON. The original file was preserved.",
                 FilePath,
@@ -44,13 +51,26 @@ public sealed class ActivityStore
         }
         catch (Exception exception) when (IsExpectedStorageException(exception))
         {
-            throw new ActivityStoreException("Activities could not be read. Check file access and try again.", FilePath, exception);
+            // Fail closed: do not allow a write after a failed read to replace data we could not inspect.
+            _loadFailure = exception;
+            throw new ActivityStoreException(
+                "Activities could not be read. Check file access and try again.",
+                FilePath,
+                exception);
         }
     }
 
     public async Task SaveAsync(IEnumerable<Activity> activities)
     {
         ArgumentNullException.ThrowIfNull(activities);
+
+        if (_loadFailure is not null)
+        {
+            throw new ActivityStoreException(
+                "Activities cannot be saved because the previous load failed. The existing file was preserved.",
+                FilePath,
+                _loadFailure);
+        }
 
         var directory = Path.GetDirectoryName(FilePath)
             ?? throw new InvalidOperationException("The activities file path must include a directory.");
