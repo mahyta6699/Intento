@@ -35,11 +35,15 @@ public sealed partial class MainWindow : Window
         {
             _activities = (await _store.LoadAsync()).ToList();
             ActivitiesRepeater.ItemsSource = _activities;
+            AddActivityButton.IsEnabled = true;
         }
         catch (ActivityStoreException exception)
         {
             _activities = [];
             ActivitiesRepeater.ItemsSource = _activities;
+
+            // Fail closed: adding an activity would otherwise replace a corrupt or unreadable file.
+            AddActivityButton.IsEnabled = false;
             await ShowPersistenceErrorAsync(exception);
         }
     }
