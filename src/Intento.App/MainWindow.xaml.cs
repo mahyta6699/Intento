@@ -9,6 +9,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly ActivityStore _store = new();
     private readonly WorkspaceLauncher _launcher = new();
+    private List<Activity> _activities = [];
     private bool _activitiesLoaded;
 
     public MainWindow()
@@ -31,18 +32,51 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            var activities = await _store.LoadAsync();
-            if (activities.Count == 0)
-            {
-                activities = CreateDefaults();
-                await _store.SaveAsync(activities);
-            }
-
-            ActivitiesRepeater.ItemsSource = activities;
+            _activities = (await _store.LoadAsync()).ToList();
+            ActivitiesRepeater.ItemsSource = _activities;
         }
         catch (ActivityStoreException exception)
         {
-            ActivitiesRepeater.ItemsSource = Array.Empty<Activity>();
+            _activities = [];
+            ActivitiesRepeater.ItemsSource = _activities;
+            await ShowPersistenceErrorAsync(exception);
+        }
+    }
+
+    private async void AddActivity_Click(object sender, RoutedEventArgs e)
+    {
+        var nameInput = new TextBox
+        {
+            PlaceholderText = "Activity name",
+            MinWidth = 280
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = "Create activity",
+            Content = nameInput,
+            PrimaryButtonText = "Create",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        var name = nameInput.Text.Trim();
+        if (result != ContentDialogResult.Primary || string.IsNullOrWhiteSpace(name))
+            return;
+
+        var activity = new Activity { Name = name, Icon = "⚡" };
+        var updatedActivities = _activities.Append(activity).ToList();
+
+        try
+        {
+            await _store.SaveAsync(updatedActivities);
+            _activities = updatedActivities;
+            ActivitiesRepeater.ItemsSource = _activities;
+        }
+        catch (ActivityStoreException exception)
+        {
             await ShowPersistenceErrorAsync(exception);
         }
     }
@@ -69,13 +103,4 @@ public sealed partial class MainWindow : Window
 
         await dialog.ShowAsync();
     }
-
-    private static IReadOnlyList<Activity> CreateDefaults() =>
-        new Activity[]
-        {
-            new() { Name = "Job", Icon = "💼" },
-            new() { Name = "Learning", Icon = "📚" },
-            new() { Name = "Research", Icon = "🔬" },
-            new() { Name = "Workout", Icon = "🏋️" }
-        };
 }
