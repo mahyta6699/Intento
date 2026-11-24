@@ -100,7 +100,7 @@ public sealed class ActivityStoreTests
     {
         using var directory = new TemporaryDirectory();
         var path = Path.Combine(directory.Path, "activities.json");
-        const string previousJson = "[{\\"Name\\":\\"Existing\\"}]";
+        const string previousJson = """[{"Name":"Existing"}]""";
         await File.WriteAllTextAsync(path, previousJson);
         var fileSystem = new FailingFileSystem { ReplaceFailure = new IOException("disk error") };
         var store = new ActivityStore(fileSystem, path);
