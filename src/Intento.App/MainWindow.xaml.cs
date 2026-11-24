@@ -162,7 +162,6 @@ public sealed partial class MainWindow : Window
         {
             Content = "+",
             FontSize = 28,
-            FontWeight = FontWeights.Normal,
             Foreground = new SolidColorBrush(Colors.Black),
             HorizontalAlignment = HorizontalAlignment.Center,
             Width = 56,
@@ -174,7 +173,6 @@ public sealed partial class MainWindow : Window
         {
             Text = "Items in this group",
             FontSize = 16,
-            FontWeight = FontWeights.SemiBold,
             Margin = new Thickness(0, 0, 0, 4)
         });
         root.Children.Add(rowsPanel);
