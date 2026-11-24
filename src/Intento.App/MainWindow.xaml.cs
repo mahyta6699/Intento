@@ -134,7 +134,6 @@ public sealed partial class MainWindow : Window
                 Foreground = new SolidColorBrush(Colors.Red),
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(6, 2, 6, 2),
-                AutomationPropertiesName = "Remove item"
             };
 
             Grid.SetColumn(type, 0);
@@ -168,7 +167,6 @@ public sealed partial class MainWindow : Window
             HorizontalAlignment = HorizontalAlignment.Center,
             Width = 56,
             Height = 48,
-            AutomationPropertiesName = "Add item"
         };
         addItemButton.Click += (_, _) => AddItemRow();
 
