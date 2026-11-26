@@ -314,6 +314,7 @@ public sealed partial class MainWindow : Window
             return;
         }
         activity.Icon = (stickerPicker.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "⚡";
+        activity.ImagePath = selectedImagePath;
         activity.Items = updatedItems;
         try
         {
