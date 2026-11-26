@@ -6,6 +6,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
+using System.IO;
 
 namespace Intento.App;
 
@@ -82,6 +85,34 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async void EditActivity_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: Activity activity })
+            await ShowActivityEditorAsync(activity, allowDelete: true);
+    }
+
+    private async void DeleteActivity_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: Activity activity }) return;
+        var confirm = new ContentDialog
+        {
+            Title = "Delete group?",
+            Content = "Delete " + activity.Name + " and its saved items?",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
+        };
+        if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
+        var updated = _activities.Where(x => x.Id != activity.Id).ToList();
+        try
+        {
+            await _store.SaveAsync(updated);
+            _activities = updated;
+            ActivitiesRepeater.ItemsSource = _activities;
+        }
+        catch (ActivityStoreException exception) { await ShowPersistenceErrorAsync(exception); }
+    }
+
     private async void ActivityButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (sender is Button { Tag: Activity activity })
@@ -93,7 +124,33 @@ public sealed partial class MainWindow : Window
 
     private async Task ShowActivityEditorAsync(Activity activity, bool allowDelete)
     {
-        var root = new StackPanel { Spacing = 12, MinWidth = 460, MaxWidth = 620 };
+        var root = new StackPanel { Spacing = 12, MinWidth = 520, MaxWidth = 760 };
+        var groupName = new TextBox { Header = "Group name", Text = activity.Name, MinWidth = 300 };
+        var sticker = new ComboBox { Header = "Choose a sticker", MinWidth = 180 };
+        var stickers = new[] { "⚡", "💼", "📚", "🔬", "🏋️", "🎨", "🎯", "💡", "🎵", "🌱", "🚀", "☕", "🧠", "✈️", "❤️" };
+        foreach (var symbol in stickers) sticker.Items.Add(new ComboBoxItem { Content = symbol, Tag = symbol });
+        sticker.SelectedIndex = Math.Max(0, Array.IndexOf(stickers, activity.Icon));
+        var imagePath = new TextBox { Header = "Custom image (optional)", Text = activity.ImagePath ?? "", IsReadOnly = true, MinWidth = 300 };
+        var chooseImage = new Button { Content = "Browse image..." };
+        chooseImage.Click += async (_, _) =>
+        {
+            var picker = new FileOpenPicker();
+            foreach (var ext in new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp" }) picker.FileTypeFilter.Add(ext);
+            InitializePicker(picker);
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Intento", "Images");
+            Directory.CreateDirectory(folder);
+            var destination = Path.Combine(folder, activity.Id + "_" + Path.GetFileName(file.Path));
+            File.Copy(file.Path, destination, true);
+            imagePath.Text = destination;
+        };
+        var imageRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        imageRow.Children.Add(imagePath);
+        imageRow.Children.Add(chooseImage);
+        root.Children.Add(groupName);
+        root.Children.Add(sticker);
+        root.Children.Add(imageRow);
         var rowsPanel = new StackPanel { Spacing = 8 };
         var rows = new List<ItemEditorRow>();
 
@@ -103,6 +160,7 @@ public sealed partial class MainWindow : Window
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(115) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(92) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(38) });
 
             var type = new ComboBox { MinWidth = 110, VerticalAlignment = VerticalAlignment.Center };
@@ -128,6 +186,34 @@ public sealed partial class MainWindow : Window
                 Text = item?.Target ?? "",
                 VerticalAlignment = VerticalAlignment.Center
             };
+            var browse = new Button { Content = "Browse", VerticalAlignment = VerticalAlignment.Center };
+            browse.Click += async (_, _) =>
+            {
+                var selected = (type.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+                if (selected == "Url") return;
+                if (selected == "Folder")
+                {
+                    var picker = new FolderPicker();
+                    picker.FileTypeFilter.Add("*");
+                    InitializePicker(picker);
+                    var folder = await picker.PickSingleFolderAsync();
+                    if (folder is not null) target.Text = folder.Path;
+                }
+                else
+                {
+                    var picker = new FileOpenPicker();
+                    picker.FileTypeFilter.Add("*");
+                    InitializePicker(picker);
+                    var file = await picker.PickSingleFileAsync();
+                    if (file is not null) target.Text = file.Path;
+                }
+            };
+            type.SelectionChanged += (_, _) =>
+            {
+                var isUrl = (type.SelectedItem as ComboBoxItem)?.Tag?.ToString() == "Url";
+                browse.IsEnabled = !isUrl;
+                target.PlaceholderText = isUrl ? "Website URL" : "File or folder path";
+            };
             var remove = new Button
             {
                 Content = "✕",
@@ -139,10 +225,12 @@ public sealed partial class MainWindow : Window
             Grid.SetColumn(type, 0);
             Grid.SetColumn(name, 1);
             Grid.SetColumn(target, 2);
-            Grid.SetColumn(remove, 3);
+            Grid.SetColumn(browse, 3);
+            Grid.SetColumn(remove, 4);
             row.Children.Add(type);
             row.Children.Add(name);
             row.Children.Add(target);
+            row.Children.Add(browse);
             row.Children.Add(remove);
 
             var editorRow = new ItemEditorRow(row, type, name, target);
@@ -228,6 +316,11 @@ public sealed partial class MainWindow : Window
 
         if (result != ContentDialogResult.Primary)
             return;
+        if (string.IsNullOrWhiteSpace(groupName.Text))
+        {
+            await ShowValidationErrorAsync("Group name cannot be empty.");
+            return;
+        }
 
         var updatedItems = new List<WorkspaceItem>();
         foreach (var row in rows)
@@ -265,6 +358,12 @@ public sealed partial class MainWindow : Window
         }
 
         var originalItems = activity.Items;
+        var originalName = activity.Name;
+        var originalIcon = activity.Icon;
+        var originalImagePath = activity.ImagePath;
+        activity.Name = groupName.Text.Trim();
+        activity.Icon = (sticker.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "⚡";
+        activity.ImagePath = string.IsNullOrWhiteSpace(imagePath.Text) ? null : imagePath.Text;
         activity.Items = updatedItems;
         try
         {
@@ -274,8 +373,17 @@ public sealed partial class MainWindow : Window
         catch (ActivityStoreException exception)
         {
             activity.Items = originalItems;
+            activity.Name = originalName;
+            activity.Icon = originalIcon;
+            activity.ImagePath = originalImagePath;
             await ShowPersistenceErrorAsync(exception);
         }
+    }
+
+    private void InitializePicker(object picker)
+    {
+        var hwnd = WindowNative.GetWindowHandle(this);
+        InitializeWithWindow.Initialize(picker, hwnd);
     }
 
     private async void ActivityButton_Click(object sender, RoutedEventArgs e)
