@@ -102,7 +102,8 @@ public sealed partial class MainWindow : Window
     private async Task ShowActivityEditorAsync(Activity activity)
     {
         var root = new StackPanel { Spacing = 12, MinWidth = 480, MaxWidth = 680 };
-        var groupName = new TextBox { Header = "Group name", Text = activity.Name, MinWidth = 300 };\n        var selectedImagePath = activity.ImagePath;\n        var originalImage = activity.ImagePath;
+        var groupName = new TextBox { Header = "Group name", Text = activity.Name, MinWidth = 300 };
+        var selectedImagePath = activity.ImagePath;\n        var originalImage = activity.ImagePath;
         var stickerPicker = new ComboBox { Header = "Choose a sticker", Width = 220 };
         foreach (var sticker in ActivityStickers)
             stickerPicker.Items.Add(new ComboBoxItem { Content = sticker, Tag = sticker, FontSize = 22 });
