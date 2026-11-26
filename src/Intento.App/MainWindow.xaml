@@ -29,6 +29,8 @@
                                     MinWidth="220"
                                     MinHeight="100">
                                 <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                    <Image Width="40" Height="40" Stretch="UniformToFill"
+                                           Tag="{Binding}" Loaded="ActivityImage_Loaded" />
                                     <TextBlock Text="{Binding Icon}" FontSize="32" HorizontalAlignment="Center" />
                                     <TextBlock Text="{Binding Name}" FontSize="18" HorizontalAlignment="Center" />
                                 </StackPanel>
