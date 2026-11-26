@@ -102,7 +102,7 @@ public sealed partial class MainWindow : Window
     private async Task ShowActivityEditorAsync(Activity activity)
     {
         var root = new StackPanel { Spacing = 12, MinWidth = 480, MaxWidth = 680 };
-        var groupName = new TextBox { Header = "Group name", Text = activity.Name, MinWidth = 300 };
+        var groupName = new TextBox { Header = "Group name", Text = activity.Name, MinWidth = 300 };\n        var selectedImagePath = activity.ImagePath;\n        var originalImage = activity.ImagePath;
         var stickerPicker = new ComboBox { Header = "Choose a sticker", Width = 220 };
         foreach (var sticker in ActivityStickers)
             stickerPicker.Items.Add(new ComboBoxItem { Content = sticker, Tag = sticker, FontSize = 22 });
@@ -110,7 +110,7 @@ public sealed partial class MainWindow : Window
         stickerPicker.SelectedIndex = Array.IndexOf(ActivityStickers, currentSticker);
         var imageStatus = new TextBlock
         {
-            Text = string.IsNullOrWhiteSpace(activity.ImagePath) ? "No custom image selected" : System.IO.Path.GetFileName(activity.ImagePath),
+            Text = string.IsNullOrWhiteSpace(selectedImagePath) ? "No custom image selected" : System.IO.Path.GetFileName(selectedImagePath),
             VerticalAlignment = VerticalAlignment.Center,
             TextTrimming = TextTrimming.CharacterEllipsis
         };
@@ -127,14 +127,14 @@ public sealed partial class MainWindow : Window
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                activity.ImagePath = file.Path;
+                selectedImagePath = file.Path;
                 imageStatus.Text = file.Name;
             }
         };
         var clearImage = new Button { Content = "Use sticker instead" };
         clearImage.Click += (_, _) =>
         {
-            activity.ImagePath = null;
+            selectedImagePath = null;
             imageStatus.Text = "No custom image selected";
         };
         root.Children.Add(groupName);
