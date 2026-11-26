@@ -10,7 +10,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="What do you intent to do today?"
+        <TextBlock Text="What do you intend to do today?"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Top"
                    FontSize="28"
