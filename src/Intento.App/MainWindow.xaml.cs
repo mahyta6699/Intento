@@ -330,6 +330,27 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void ActivityImage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Image image || image.Tag is not Activity activity ||
+            string.IsNullOrWhiteSpace(activity.ImagePath))
+        {
+            if (sender is Image emptyImage) emptyImage.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        try
+        {
+            image.Source = new BitmapImage(new Uri(activity.ImagePath));
+            if (image.Parent is StackPanel panel && panel.Children.Count > 1)
+                panel.Children[1].Visibility = Visibility.Collapsed;
+        }
+        catch
+        {
+            image.Visibility = Visibility.Collapsed;
+        }
+    }
+
     private async void ActivityButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: Activity activity })
