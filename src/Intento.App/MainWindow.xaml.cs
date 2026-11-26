@@ -128,8 +128,12 @@ public sealed partial class MainWindow : Window
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                selectedImagePath = file.Path;
-                imageStatus.Text = file.Name;
+                var imageFolder = await ApplicationData.Current.LocalFolder.CreateFolderAsync(
+                    "Images", CreationCollisionOption.OpenIfExists);
+                var savedImage = await file.CopyAsync(
+                    imageFolder, file.Name, NameCollisionOption.GenerateUniqueName);
+                selectedImagePath = savedImage.Path;
+                imageStatus.Text = savedImage.Name;
             }
         };
         var clearImage = new Button { Content = "Use sticker instead" };
