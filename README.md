@@ -92,6 +92,8 @@ Requirements:
 
 Open `Intento.sln`, select the `x64` platform, and run the `Intento.App` project.
 
+To build from the command line, double-click `build.bat` in the repository root, or run `build.bat Release` for a Release build. It builds `Intento.sln` for `x64` with the .NET SDK and keeps the window open so you can read the result.
+
 Run persistence tests with:
 
 ```powershell
