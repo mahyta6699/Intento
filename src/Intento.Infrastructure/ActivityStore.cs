@@ -8,8 +8,6 @@ namespace Intento.Infrastructure;
 /// </summary>
 public sealed class ActivityStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
     private readonly IActivityFileSystem _fileSystem;
     private Exception? _loadFailure;
 
@@ -36,7 +34,7 @@ public sealed class ActivityStore
             }
 
             var json = await _fileSystem.ReadAllTextAsync(FilePath);
-            var activities = JsonSerializer.Deserialize<List<Activity>>(json) ?? [];
+            var activities = JsonSerializer.Deserialize(json, IntentoJsonContext.Default.ListActivity) ?? [];
             _loadFailure = null;
             return activities;
         }
@@ -80,7 +78,7 @@ public sealed class ActivityStore
         {
             // Materialize before touching disk so enumeration errors cannot affect the current file.
             var snapshot = activities.ToList();
-            var json = JsonSerializer.Serialize(snapshot, JsonOptions);
+            var json = JsonSerializer.Serialize(snapshot, IntentoJsonContext.Default.ListActivity);
 
             _fileSystem.CreateDirectory(directory);
             await _fileSystem.WriteAllTextAsync(temporaryPath, json);

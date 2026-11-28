@@ -1,0 +1,67 @@
+﻿# .NET build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Intento packaged binaries
+.exe/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/packages/
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+*.bak
+*.cache
+*.dmp
+*.mdmp
+*~
+Thumbs.db
+Desktop.ini
+
+# Local secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+appsettings.Development.local.json
+secrets.json
+
+# Windows packaging outputs
+AppPackages/
+BundleArtifacts/
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.msixupload
+*.appxupload
+
+# Generated reports
+coverage/
+coverage-report/

@@ -4,60 +4,77 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Intento.Core.Models"
     mc:Ignorable="d">
-    <Grid Padding="32">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="What do you intend to do today?"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Top"
-                   FontSize="28"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,28" />
-        <StackPanel Grid.Row="1" Spacing="20" VerticalAlignment="Top">
-            <ItemsRepeater x:Name="ActivitiesRepeater">
-                <ItemsRepeater.Layout>
-                    <UniformGridLayout MinItemWidth="220" MinItemHeight="160" MinColumnSpacing="16" MinRowSpacing="16" />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Spacing="8" MinWidth="220">
-                            <Button Click="ActivityButton_Click"
-                                    Tag="{Binding}"
-                                    MinWidth="220"
-                                    MinHeight="100">
-                                <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                    <Image Width="40" Height="40" Stretch="UniformToFill"
-                                           Tag="{Binding}" Loaded="ActivityImage_Loaded" />
-                                    <TextBlock Text="{Binding Icon}" FontSize="32" HorizontalAlignment="Center" />
-                                    <TextBlock Text="{Binding Name}" FontSize="18" HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Content="Edit" Tag="{Binding}"
-                                        Click="EditActivity_Click" HorizontalAlignment="Stretch" />
-                                <Button Grid.Column="1" Content="Delete" Tag="{Binding}"
-                                        Click="DeleteActivity_Click" HorizontalAlignment="Stretch" />
-                            </Grid>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-            <Button x:Name="AddActivityButton"
-                    Click="AddActivity_Click"
-                    Width="220"
-                    Height="100"
-                    HorizontalAlignment="Left"
-                    FontSize="48"
-                    FontWeight="Light"
-                    Content="+"
-                    AutomationProperties.Name="Add activity" />
-        </StackPanel>
+        <MenuBar Grid.Row="0">
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="Open config file" Click="OpenConfigFile_Click" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Exit" Click="Exit_Click" />
+            </MenuBarItem>
+            <MenuBarItem Title="Help">
+                <MenuFlyoutItem Text="About" Click="About_Click" />
+            </MenuBarItem>
+        </MenuBar>
+        <Grid Grid.Row="1" Padding="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="What do you intend to do today?"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       FontSize="28"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,28" />
+            <StackPanel Grid.Row="1" Spacing="20" VerticalAlignment="Top">
+                <ItemsRepeater x:Name="ActivitiesRepeater">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout MinItemWidth="220" MinItemHeight="160" MinColumnSpacing="16" MinRowSpacing="16" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:Activity">
+                            <StackPanel Spacing="8" MinWidth="220">
+                                <Button Click="ActivityButton_Click"
+                                        Tag="{Binding}"
+                                        MinWidth="220"
+                                        MinHeight="100">
+                                    <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                        <Image Width="40" Height="40" Stretch="UniformToFill"
+                                               Tag="{Binding}" Loaded="ActivityImage_Loaded" />
+                                        <TextBlock Text="{x:Bind Icon}" FontSize="32" HorizontalAlignment="Center" />
+                                        <TextBlock Text="{x:Bind Name}" FontSize="18" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="Edit" Tag="{Binding}"
+                                            Click="EditActivity_Click" HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="1" Content="Delete" Tag="{Binding}"
+                                            Click="DeleteActivity_Click" HorizontalAlignment="Stretch" />
+                                </Grid>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <Button x:Name="AddActivityButton"
+                        Click="AddActivity_Click"
+                        Width="220"
+                        Height="100"
+                        HorizontalAlignment="Left"
+                        FontSize="48"
+                        FontWeight="Light"
+                        Content="+"
+                        AutomationProperties.Name="Add activity" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
