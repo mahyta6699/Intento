@@ -9,6 +9,8 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinRT.Interop;
+using DiagnosticsProcess = System.Diagnostics.Process;
+using DiagnosticsProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
 namespace Intento.App;
 
@@ -16,6 +18,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly ActivityStore _store = new();
     private readonly WorkspaceLauncher _launcher = new();
+    private const string ReadmeUrl = "https://github.com/mahyta6699/Intento/blob/main/README.md";
     private List<Activity> _activities = [];
     private bool _activitiesLoaded;
 
@@ -361,6 +364,50 @@ public sealed partial class MainWindow : Window
     {
         if (sender is Button { Tag: Activity activity })
             await _launcher.LaunchAsync(activity);
+    }
+
+    private async void OpenConfigFile_Click(object sender, RoutedEventArgs e)
+    {
+        var configPath = _store.FilePath;
+        try
+        {
+            // Create the file on first use so the editor has something to open.
+            if (!File.Exists(configPath))
+                await _store.SaveAsync(_activities);
+
+            DiagnosticsProcess.Start(new DiagnosticsProcessStartInfo(configPath) { UseShellExecute = true });
+        }
+        catch (ActivityStoreException exception) { await ShowPersistenceErrorAsync(exception); }
+        catch (Exception exception)
+        {
+            await ShowMessageAsync("Could not open the config file", $"{exception.Message}\n\nFile: {configPath}");
+        }
+    }
+
+    private void Exit_Click(object sender, RoutedEventArgs e) => Application.Current.Exit();
+
+    private async void About_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            DiagnosticsProcess.Start(new DiagnosticsProcessStartInfo(ReadmeUrl) { UseShellExecute = true });
+        }
+        catch (Exception exception)
+        {
+            await ShowMessageAsync("Could not open the browser", $"{exception.Message}\n\n{ReadmeUrl}");
+        }
+    }
+
+    private async Task ShowMessageAsync(string title, string message)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = message,
+            CloseButtonText = "OK",
+            XamlRoot = ((FrameworkElement)Content).XamlRoot
+        };
+        await dialog.ShowAsync();
     }
 
     private async Task ShowValidationErrorAsync(string message)
