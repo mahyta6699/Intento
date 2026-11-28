@@ -1,9 +1,10 @@
-# Builds Intento.sln for x64 with the .NET 10 SDK.
-# If no .NET 10 SDK is installed, it is downloaded into .dotnet\ next to this script (no admin needed).
-# Usage: .\build.ps1 [-Configuration Debug|Release]
+# Publishes Intento as a self-contained x64 app into dist\Intento-win-x64 (plus a .zip).
+# The output bundles the .NET runtime and the Windows App SDK, so end users install nothing.
+# Only this build machine needs the .NET 10 SDK; if it is missing it is downloaded into .dotnet\ (no admin needed).
+# Usage: .\build.ps1 [-Configuration Release|Debug]
 param(
     [ValidateSet('Debug', 'Release')]
-    [string]$Configuration = 'Debug'
+    [string]$Configuration = 'Release'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,14 +50,20 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_NOLOGO = '1'
 
 Write-Host "Using .NET SDK $(& $dotnet --version) from $env:DOTNET_ROOT"
-Write-Host "Building Intento.sln ($Configuration|x64). NuGet packages are downloaded on the first build..." -ForegroundColor Cyan
+$outDir = Join-Path $PSScriptRoot 'dist\Intento-win-x64'
+Write-Host "Publishing Intento ($Configuration|x64, self-contained). NuGet packages are downloaded on the first run..." -ForegroundColor Cyan
 
-& $dotnet build Intento.sln -c $Configuration -p:Platform=x64
+& $dotnet publish src\Intento.App\Intento.App.csproj -c $Configuration -p:Platform=x64 -r win-x64 `
+    --self-contained true -p:WindowsAppSDKSelfContained=true -p:WindowsPackageType=None -o $outDir
 if ($LASTEXITCODE -ne 0) {
     Write-Host "BUILD FAILED (exit code $LASTEXITCODE)." -ForegroundColor Red
     exit $LASTEXITCODE
 }
 
+$zip = Join-Path $PSScriptRoot 'dist\Intento-win-x64.zip'
+Compress-Archive -Path (Join-Path $outDir '*') -DestinationPath $zip -Force
+
 Write-Host 'BUILD SUCCEEDED.' -ForegroundColor Green
-Write-Host "App output: src\Intento.App\bin\x64\$Configuration\"
+Write-Host "App folder: $outDir  (run Intento.App.exe)"
+Write-Host "Zip to share: $zip"
 exit 0

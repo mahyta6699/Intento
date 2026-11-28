@@ -92,7 +92,7 @@ Requirements:
 
 Open `Intento.sln`, select the `x64` platform, and run the `Intento.App` project.
 
-To build from the command line, double-click `build.bat` in the repository root, or run `build.bat Release` for a Release build. It builds `Intento.sln` for `x64` with the .NET SDK and keeps the window open so you can read the result.
+To build from the command line, double-click `build.bat` in the repository root. It publishes a self-contained x64 app to `dist\Intento-win-x64` and a zip next to it. The output includes the .NET runtime and the Windows App SDK, so it runs on Windows 10 1809 or later with nothing else to install. Only the build machine needs the .NET 10 SDK, and the script downloads it if it's missing.
 
 Run persistence tests with:
 
